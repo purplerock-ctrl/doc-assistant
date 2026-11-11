@@ -128,3 +128,16 @@
 | q18 | [109] | [17, 13, 13, 13, 13] | If I file my return on time, can the IRS work out how much tax I owe, and what happens if I end up owing more? |
 | q20 | [123] | [43, 113, 124, 117, 125] | My taxable income is about $90,020 and I'm filing as head of household. How much tax does the table say I owe? |
 | q37 | [5, 13] | [21, 21, 21, 21, 21] | I never filed a return and was owed a refund - how long do I have to claim it? |
+
+## 2026-11-11 13:28 | p17-v1 | hybrid | k=5
+
+- Note: PC check
+- Questions: `data/questions.csv` (38 answerable)
+- hit@1: 21/38 = 55%
+- hit@5: 35/38 = 92%
+
+| Miss | Wanted | Got | Question |
+| --- | --- | --- | --- |
+| q18 | [109] | [13, 13, 13, 17, 8] | If I file my return on time, can the IRS work out how much tax I owe, and what happens if I end up owing more? |
+| q20 | [123] | [113, 126, 11, 125, 31] | My taxable income is about $90,020 and I'm filing as head of household. How much tax does the table say I owe? |
+| q37 | [5, 13] | [20, 21, 21, 20, 21] | I never filed a return and was owed a refund - how long do I have to claim it? |
