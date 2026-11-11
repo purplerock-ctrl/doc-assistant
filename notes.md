@@ -130,3 +130,75 @@ I can't find that in these documents.
 [5] p17.pdf page 121
 
 4361 input tokens, 12 output tokens
+
+## Findings: ask.py v1 (first 5 questions)
+
+Overall: 4 of 5 behaved correctly. 3 correct answers, 1 correct decline,
+1 wrong decline (q01, retrieval miss).
+
+### Results
+| Question | Result | Pages cited | Checked against PDF |
+| --- | --- | --- | --- |
+| q01 Standard deduction (single) | Declined | n/a | Wrong: answer is on p97, not retrieved |
+| q08 401(k) limit | Correct + extra detail | 49, 3 | All figures confirmed on p49 and p3. Extra $11,250 catch-up figure is also on p3 |
+| q09 Business mileage rate | Correct | 4, 103 | Confirmed on both |
+| q16 Refund on unfiled return | Correct answer | 129, 13 | p13 correct. p129 is a different rule (see below) |
+| Capital of Peru | Correctly declined | n/a | Correct |
+
+### What I learned
+1. **Grounding works.** It never answered from general knowledge: it declined
+   when the answer wasn't in the retrieved chunks (q01, Peru), even though the
+   model likely knows the standard deduction.
+2. **Retrieval is the weak link.** The only failure (q01) was the right chunk
+   not being retrieved. Table-heavy chunks embed poorly, and small wording
+   changes retrieve different chunks.
+3. **Citations can be partly wrong even when the answer is right.** For q16,
+   [2] p129 says refund *claims* must be filed within 3 years of filing the
+   original return (or 2 years from paying) - a different rule from the
+   unfiled-return rule on p13. The answer was correct but one of its two
+   citations doesn't support it. Need to check citations, not just answers.
+4. **Answers can go beyond the question.** q08 added the $11,250 catch-up
+   figure. It was accurate and sourced, but the eval should allow correct
+   extra detail and only penalise wrong detail.
+5. **Unrelated questions cost more.** Peru used ~4,400 input tokens vs
+   ~2,400-2,900 for real questions, because the retrieved chunks were long
+   and irrelevant. Cost per question varies with what gets retrieved.
+
+### To fix later
+- Week 10: retrieval misses on table-heavy chunks (try hybrid search,
+  smaller chunks). Use q01 as a test case.
+- Week 11: add a citation check - does each cited chunk actually contain
+  the claim? (q16 is a test case.)
+
+python eval_retrieval.py p17-v1
+MISS q01: wanted [5], got [50, 99, 57, 54, 54] | I'm a U.S. citizen with money earned from a job overseas, and the foreign employer never gave me a W-2 or 1099. Do I still have to report that income?
+MISS q07: wanted [33], got [26, 37, 27, 37, 29] | How do I figure out whether I paid for more than half of a relative's living costs so I can claim them as a dependent?
+MISS q09: wanted [42, 43], got [44, 45, 39, 39, 44] | I get a regular paycheck and don't want to make quarterly estimated tax payments. Is there a way to avoid them?
+MISS q10: wanted [52], got [51, 51, 51, 71, 55] | My job gives me life insurance coverage worth more than $50,000. Do I have to pay tax on that, and how do I figure out how much?
+MISS q14: wanted [78], got [49, 55, 50, 49, 75] | If my employer pays me back for travel costs when I go to a job interview, do I have to report that as income?
+MISS q18: wanted [109], got [13, 13, 21, 21, 12] | If I file my return on time, can the IRS work out how much tax I owe, and what happens if I end up owing more?
+MISS q20: wanted [123], got [126, 125, 124, 119, 120] | My taxable income is about $90,020 and I'm filing as head of household. How much tax does the table say I owe?
+MISS q22: wanted [135], got [13, 13, 13, 13, 13] | If I need more time to file my federal tax return, which form do I use to ask for an extension?
+MISS q35: wanted [3], got [41, 103, 105, 95, 49] | How much overtime pay can I deduct?
+
+hit@1: 19/38 = 50%   (right page ranked first)
+hit@5: 29/38 = 76%   (right page anywhere in the top 5)
+
+python eval_retrieval.py p17-v1
+MISS q07: wanted [33], got [26, 37, 27, 37, 29] | How do I figure out whether I paid for more than half of a relative's living costs so I can claim them as a dependent?
+MISS q09: wanted [42, 43], got [44, 45, 39, 39, 44] | I get a regular paycheck and don't want to make quarterly estimated tax payments. Is there a way to avoid them?
+MISS q14: wanted [78], got [49, 55, 50, 49, 75] | If my employer pays me back for travel costs when I go to a job interview, do I have to report that as income?
+MISS q18: wanted [109], got [13, 13, 21, 21, 12] | If I file my return on time, can the IRS work out how much tax I owe, and what happens if I end up owing more?
+MISS q20: wanted [123], got [126, 125, 124, 119, 120] | My taxable income is about $90,020 and I'm filing as head of household. How much tax does the table say I owe?
+MISS q35: wanted [3], got [41, 103, 105, 95, 49] | How much overtime pay can I deduct?
+
+hit@1: 21/38 = 55%   (right page ranked first)
+hit@5: 32/38 = 84%   (right page anywhere in the top 5)
+
+## ask.py with hybrid (p17-v1)
+- Standard deduction (single): page 97 retrieved but not the table chunk with
+  $15,750. Answer gave the right number but wrongly said it only applies to
+  dependents. Page-level hit@5 overstates retrieval; the answer chunk wasn't sent.
+- Unfiled refund: only pages 20-21 retrieved (the after-filing refund rule).
+  Correctly declined rather than giving the wrong rule. Safe failure.
+- Grounding holds: no answers from outside knowledge in either case.
