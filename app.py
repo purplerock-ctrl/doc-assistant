@@ -22,9 +22,11 @@ if st.text_input("Password", type="password") != st.secrets["APP_PASSWORD"]:
 def ensure_index():
     client = chromadb.PersistentClient(path="chroma_db")
     try:
-        client.get_collection(COLLECTION)
+        if client.get_collection(COLLECTION).count() > 0:
+            return True
     except Exception:
-        subprocess.run([sys.executable, "ingest.py", COLLECTION], check=True)
+        pass
+    subprocess.run([sys.executable, "ingest.py", COLLECTION], check=True)
     return True
 
 

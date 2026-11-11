@@ -1,6 +1,7 @@
 .env
 .venv/
-data/
+data/*
+!data/p17.pdf
 chroma_db/
 *.db
 .streamlit/secrets.toml

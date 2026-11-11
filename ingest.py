@@ -46,6 +46,8 @@ def main():
         collection.add(ids=ids[start:start + 200],
                        documents=docs[start:start + 200],
                        metadatas=metas[start:start + 200])
+    if not ids:
+        raise SystemExit("No text found. Is the PDF in data/?")
     print(f"Stored {len(ids)} chunks in collection '{args.name}' "
           f"({args.size} words, {args.overlap} overlap)")
 
