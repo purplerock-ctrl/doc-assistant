@@ -1,0 +1,7 @@
+anthropic
+chromadb
+pypdf
+python-dotenv
+rank_bm25
+fonttools
+streamlit

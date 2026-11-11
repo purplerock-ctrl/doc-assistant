@@ -3,3 +3,5 @@
 data/
 chroma_db/
 *.db
+.streamlit/secrets.toml
+!data/p17.pdf
